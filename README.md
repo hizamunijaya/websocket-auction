@@ -19,10 +19,17 @@ $ npm install -D nodemon
   ```
 
 * .env file configuration(dir=./)
-  - COOKIE_SCERET
-  - PORT
+  - COOKIE_SECRET=auction
+  - PORT=8086
   
 ### Server Execution Script
 ```
 $ npm start
+```
+<br />
+
+
+> ESLint Configuration(optional)
+```
+$ npm install -g eslint eslint-config-airbnb-base eslint-plugin-import
 ```
