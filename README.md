@@ -13,7 +13,7 @@ $ npm install -D nodemon
 ### Environment Configuration
 * Database: MySQL(version 5.7)
 
-  ##### * Database creation CLI
+  ##### * Database creation CLI(sequelize-cli)
   ```
   $ sequelize db:create
   ```
