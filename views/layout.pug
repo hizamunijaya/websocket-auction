@@ -11,7 +11,7 @@ html
       .profile-wrap
         .profile
           if user && user.id
-            .user-name= '안녕하세요! ' + user.nick + '님'
+            .user-name= '안녕하세요! ' + user.nickname + '님'
             .user-money= '보유 자산: ' + user.money + '원'
             input#my-id(type='hidden' value=user.id)
             a#logout.btn(href='/auth/logout') 로그아웃
