@@ -69,6 +69,7 @@ router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) =>
       img: req.file.filename,
       price,
     });
+    res.redirect('/');
   } catch (error) {
     console.error(error);
     next(error);
