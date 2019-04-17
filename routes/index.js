@@ -76,4 +76,69 @@ router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) =>
   }
 });
 
+router.get('/good/:id', isLoggedIn, async (req, res, next) => {
+  try {
+    const [good, auction] = await Promise.all([
+      Good.find({
+        where: { id: req.params.id },
+        include: {
+          model: User,
+          as: 'owner',
+        },
+      }),
+      Auction.find({
+        where: { goodId: req.params.id },
+        include: { model: User },
+        order: [['bid', 'ASC']],
+      }),
+    ]);
+    res.render('auction', {
+      title: `${good.namd} - NodeAuction`,
+      good,
+      auction,
+      auctionError: req.flash('auctionError'),
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.post('/good/:id/bid', async (req, res, next) => {
+  try {
+    const { bid, msg } = req.body;
+    const good = await Good.find({
+      where: { id: req.params.id },
+      include: { model: Auction },
+      order: [[{ model: Auction }, 'bid', 'DESC']],
+    });
+    // When bidding at a price lower than starting price
+    if (good.price > bid) {
+      return res.status(403).send('You must bid higher than the starting price.');
+    }
+    // When bidding time ends
+    if (new Date(good.createdAt).valueOf() + (24 * 60 * 60 * 1000) < new Date()) {
+      return res.status(403).send('The auction has ended.');
+    }
+    if (good.auctions[0] && good.auctions[0].bid >= bid) {
+      return res.status(403).send('Must be higher than previous bid.');
+    }
+    const result = await Auction.create({
+      bid,
+      msg,
+      userId: req.user.id,
+      goodId: req.params.id,
+    });
+    req.app.get('io').to(req.params.id).emit('bid',{
+      bid: result.bid,
+      msg: result.msg,
+      nickname: req.user.nickname,
+    });
+    return res.send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
 module.exports = router;
