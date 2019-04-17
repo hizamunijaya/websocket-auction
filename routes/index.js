@@ -86,14 +86,14 @@ router.get('/good/:id', isLoggedIn, async (req, res, next) => {
           as: 'owner',
         },
       }),
-      Auction.find({
+      Auction.findAll({
         where: { goodId: req.params.id },
         include: { model: User },
         order: [['bid', 'ASC']],
       }),
     ]);
     res.render('auction', {
-      title: `${good.namd} - NodeAuction`,
+      title: `${good.name} - NodeAuction`,
       good,
       auction,
       auctionError: req.flash('auctionError'),
@@ -129,7 +129,7 @@ router.post('/good/:id/bid', async (req, res, next) => {
       userId: req.user.id,
       goodId: req.params.id,
     });
-    req.app.get('io').to(req.params.id).emit('bid',{
+    req.app.get('io').to(req.params.id).emit('bid', {
       bid: result.bid,
       msg: result.msg,
       nickname: req.user.nickname,

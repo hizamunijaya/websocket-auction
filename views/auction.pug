@@ -2,7 +2,7 @@ extends layout
 
 block good
   h2= good.name
-  div= '등록자: ' + good.owner.nick
+  div= '등록자: ' + good.owner.nickname
   div= '시작가: ' + good.price + '원'
   strong#time(data-start=good.createdAt)
   img#good-img(src='/img/' + good.img)
@@ -12,7 +12,7 @@ block content
     #bid
       for bid in auction
         div
-          span= bid.user.nick + '님: '
+          span= bid.user.nickname + '님: '
           strong= bid.bid + '원에 입찰하셨습니다.'
           if bid.msg
             span= '(' + bid.msg + ')'
@@ -64,13 +64,13 @@ block content
         return time.textContent = hours + ':' + minutes + ':' + seconds;
       }
     };
-    var socket = io.connect('http://localhost:8010', {
+    var socket = io.connect('http://localhost:8086', {
       path: '/socket.io'
     });
     socket.on('bid', function (data) {
       var div = document.createElement('div');
       var span = document.createElement('span');
-      span.textContent = data.nick + '님: ';
+      span.textContent = data.nickname + '님: ';
       var strong = document.createElement('strong');
       strong.textContent = data.bid + '원에 입찰하셨습니다.';
       div.appendChild(span);
