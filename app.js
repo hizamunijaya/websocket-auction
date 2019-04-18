@@ -5,8 +5,6 @@ const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
 const passport = require('passport');
-const sse = require('./sse');
-const webSocket = require('./socket');
 require('dotenv').config();
 
 const indexRouter = require('./routes/index');
@@ -14,10 +12,15 @@ const authRouter = require('./routes/auth');
 
 const { sequelize } = require('./models');
 const passportConfig = require('./passport');
+const sse = require('./sse');
+const webSocket = require('./socket');
+const checkAuction = require('./checkAuction');
 
 const app = express();
 sequelize.sync();
 passportConfig(passport);
+checkAuction();
+
 
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));

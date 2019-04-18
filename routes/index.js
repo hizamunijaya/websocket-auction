@@ -2,8 +2,9 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const schedule = require('node-schedule');
 
-const { Good, Auction, User } = require('../models');
+const { Good, Auction, User, sequelize } = require('../models');
 const { isLoggedIn, isNotLoggedIn } = require('../routes/middlewares');
 
 const router = express.Router();
@@ -63,11 +64,30 @@ const upload = multer({
 router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) => {
   try {
     const { name, price } = req.body;
-    await Good.create({
+    const good = await Good.create({
       ownerId: req.user.id,
       name,
       img: req.file.filename,
       price,
+    });
+    // Scheduling for successful bidder selection.
+    const end = new Date();
+    end.setDate(end.getDate() + 1); // After 24Hours.
+    /*
+      Schedules are stored in server memory
+      The scheduler disappears when the server is turned off.
+    */
+    schedule.scheduleJob(end, async () => {
+      const success = await Auction.find({
+        where: { goodId: good.id },
+        order: [['bid', 'DESC']], // Highest bid price.
+      });
+      await Good.update({ soldId: success.userId }, { where: { id: good.id } });
+      await User.update({
+        money: sequelize.literal(`money - ${success.bid}`), // SQL Query in sequelize
+      }, {
+        where: { id: success.userId },
+      });
     });
     res.redirect('/');
   } catch (error) {
@@ -135,6 +155,20 @@ router.post('/good/:id/bid', async (req, res, next) => {
       nickname: req.user.nickname,
     });
     return res.send('ok');
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get('/list', isLoggedIn, async (req, res, next) => {
+  try {
+    const goods = await Good.findAll({
+      where: { soldId: req.user.id },
+      include: { model: Auction },
+      order: [[{ model: Auction }, 'bid', 'DESC']],
+    });
+    res.render('list', { title: 'successful bidding list', goods });
   } catch (error) {
     console.error(error);
     next(error);
