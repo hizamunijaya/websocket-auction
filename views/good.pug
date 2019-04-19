@@ -10,6 +10,9 @@ block content
         label(for='good-photo') 상품 사진
         input#good-photo(type='file' name='img' required)
       .input-group
+        label(for='good-photo') 경매 시간
+        input#good-end(type='number' name='end' required)
+      .input-group
         label(for='good-price') 시작 가격
         input#good-price(type='number' name='price' required)
       button#join-btn.btn(type='submit') 상품 등록

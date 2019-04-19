@@ -67,12 +67,13 @@ router.post('/good', isLoggedIn, upload.single('img'), async (req, res, next) =>
     const good = await Good.create({
       ownerId: req.user.id,
       name,
+      end: req.body.end,
       img: req.file.filename,
       price,
     });
     // Scheduling for successful bidder selection.
     const end = new Date();
-    end.setDate(end.getDate() + 1); // After 24Hours.
+    end.setHours(end.getHours() + good.end); // default: after 24Hours.
     /*
       Schedules are stored in server memory
       The scheduler disappears when the server is turned off.
@@ -142,6 +143,9 @@ router.post('/good/:id/bid', async (req, res, next) => {
     }
     if (good.auctions[0] && good.auctions[0].bid >= bid) {
       return res.status(403).send('Must be higher than previous bid.');
+    }
+    if (good.ownerId === req.user.id) {
+      return res.status(403).send('owner can not bid');
     }
     const result = await Auction.create({
       bid,

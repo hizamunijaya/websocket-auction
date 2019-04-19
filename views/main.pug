@@ -15,7 +15,7 @@ block content
           td= good.name
           td: img(src='/img/' + good.img)
           td= good.price
-          td.time(data-start=good.createdAt) 00:00:00
+          td.time(data-start=good.createdAt data-end=good.end) 00:00:00
           td: a.enter.btn(href='/good/' + good.id) 입장
   script(src='https://cdnjs.cloudflare.com/ajax/libs/event-source-polyfill/0.0.9/eventsource.min.js')
   script.
@@ -24,7 +24,7 @@ block content
      document.querySelectorAll('.time').forEach(function(td) {
         var end = new Date(td.dataset.start);
         var server = new Date(parseInt(e.data, 10));
-        end.setDate(end.getDate() + 1);
+        end.setHours(end.getHours() + parseInt(td.dataset.end, 10));
         if (server >= end) {
           return td.textContent = '00:00:00';
         } else {
