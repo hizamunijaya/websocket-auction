@@ -21,6 +21,19 @@ module.exports = async () => {
         }, {
           where: { id: success.userId },
         });
+      } else {
+        schedule.scheduledJobs(end, async() => {
+          const success = await Auction.find({
+            where: { goodId: target.id },
+            order: [['bid', 'DESC']], // Highest bid price.
+          });
+          await Good.update({ soldId: success.userId }, { where: { id: target.id } });
+          await User.update({
+            money: sequelize.literal(`money - ${success.bid}`), // SQL Query in sequelize
+          }, {
+            where: { id: success.userId },
+          });
+        });
       }
     });
   } catch (error) {
