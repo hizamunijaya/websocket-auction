@@ -15,24 +15,36 @@ module.exports = async () => {
           where: { goodId: target.id },
           order: [['bid', 'DESC']],
         });
-        await Good.update({ soldId: success.userId }, { where: { id: target.id } });
-        await User.update({
-          money: sequelize.literal(`money - ${success.bid}`),
-        }, {
-          where: { id: success.userId },
-        });
+        if (success) {
+          await Good.update({ soldId: success.userId }, { where: { id: target.id } });
+          await User.update({
+            money: sequelize.literal(`money - ${success.bid}`),
+          }, {
+            where: { id: success.userId },
+          });
+        } else {
+          await Good.update({ soldId: target.ownerId }, {
+            where: { id: target.id },
+          });
+        }
       } else {
         schedule.scheduledJobs(end, async() => {
           const success = await Auction.find({
             where: { goodId: target.id },
             order: [['bid', 'DESC']], // Highest bid price.
           });
-          await Good.update({ soldId: success.userId }, { where: { id: target.id } });
-          await User.update({
-            money: sequelize.literal(`money - ${success.bid}`), // SQL Query in sequelize
-          }, {
-            where: { id: success.userId },
-          });
+          if (success) {
+            await Good.update({ soldId: success.userId }, { where: { id: target.id } });
+            await User.update({
+              money: sequelize.literal(`money - ${success.bid}`), // SQL Query in sequelize
+            }, {
+              where: { id: success.userId },
+            });
+          } else {
+            await Good.update({ soldId: target.ownerId }, {
+              where: { id: target.id },
+            });
+          }
         });
       }
     });
